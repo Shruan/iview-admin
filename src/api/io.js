@@ -7,6 +7,7 @@ const io = axios.create({
   baseURL: process.env.NODE_ENV === 'production' ? config.baseURL.pro : config.baseURL.dev,
   timeout: 10000
 })
+
 // 请求过滤器
 io.interceptors.request.use(config => {
   if (config.method !== 'get') {

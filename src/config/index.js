@@ -1,6 +1,6 @@
 export default {
   baseUrl: {
-    dev: 'https://www.easy-mock.com/mock/5add9213ce4d0e69998a6f51/iview-admin',
-    pro: 'https://produce.com'
+    dev: 'https://www.easy-mock.com/mock/5c2e68211707a03bccd1f12f/iview-admin',
+    pro: 'https://production.com'
   }
 }
