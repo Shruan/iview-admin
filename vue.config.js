@@ -6,5 +6,7 @@ module.exports = {
   devServer: {
     port: 8090,
     proxy: BASE_URL
-  }
+  },
+  // 设为false打包时不生成.map文件
+  productionSourceMap: false
 }
