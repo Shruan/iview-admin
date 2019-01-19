@@ -40,7 +40,7 @@
 
 <script>
 import { Modal, Button } from 'iview'
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 export default {
   components: {
     Modal,
@@ -58,7 +58,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('user', [
+    ...mapGetters('user', [
       'roleList'
     ])
   },

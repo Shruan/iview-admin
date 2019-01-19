@@ -42,7 +42,7 @@
                 {{user.name}}
               </div>
               <div class="avatar-text-second">
-                <!-- {{getRealRole()}} -->
+                {{user.type | getRealRole(roleList)}}
               </div>
             </div>
             <Icon
@@ -62,11 +62,8 @@
           <a
             href="javascript:void(0)"
             style="position: relative; display: block">
-            <Avatar
-              v-if="hasMounted"
-              :icon="user.avatar ? '' : 'person'"
-              :src="user.avatar ? user.avatar : ''"
-            />
+            <Avatar v-if="hasMounted && user.avatar" :src="user.avatar"/>
+            <Avatar v-else icon="person"/>
             <Icon
               class="user-status"
               :color="nowStatus.color_rgb || '#ededed'"
@@ -92,40 +89,22 @@
         </Dropdown>
 
         <!-- <router-link :to="{ name: 'Help' }"> -->
-          <Dropdown
-            trigger="click"
-            @on-click="helpClick"
-            >
-            <Icon
-              type="ios-help-circle-outline"
-              size="26"
-              class="nav-icon nav-icon-hover">
-            </Icon>
 
-            <DropdownMenu slot="list">
-              <DropdownItem name="helpCenter">帮助中心</DropdownItem>
-              <DropdownItem name="discover">探索单小二</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        <!-- </router-link> -->
-        <!-- <Icon
-          type="ios-notifications-outline"
-          size="26"
-          class="nav-icon"
-        ></Icon>
-        <Icon
-          type="ios-call-outline"
-          size="26"
-          class="nav-icon"
-        ></Icon> -->
-        <!-- <Input
-          v-model="allOrderKeyword"
-          placeholder="请输入工单号或标题进行搜索"
-          icon="ios-search"
-          class="nav-input nav-icon"
-          @on-click="searchAllOrder"
-          @on-enter="searchAllOrder"
-        /> -->
+        <Dropdown
+          trigger="click"
+          @on-click="helpClick"
+          >
+          <Icon
+            type="ios-help-circle-outline"
+            size="26"
+            class="nav-icon nav-icon-hover">
+          </Icon>
+
+          <DropdownMenu slot="list">
+            <DropdownItem name="other">其他操作</DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+
       </div>
     </Col>
 
@@ -134,7 +113,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 
 import {
   Col,
@@ -144,7 +123,8 @@ import {
   Dropdown,
   DropdownMenu,
   DropdownItem,
-  Avatar
+  Avatar,
+  Modal
 } from 'iview'
 
 import ChangeRole from './ChangeRole'
@@ -165,94 +145,61 @@ export default {
     return {
       hasMounted: false,
       isShowChangeRoleModal: false,
-      isChangeRoleSuccess: false,
       tagList: [],
       nowStatus: {}
+    }
+  },
+  filters: {
+    getRealRole (value, list) {
+      let roleMsg = list.find(item => item.type === value)
+      return (roleMsg && roleMsg. roleName) || ''
     }
   },
   computed: {
     ...mapState('menu', [
       'breadcrumbList',
-      'isVisibleSecondMenu',
-      'thirdMenuList'
+      'isVisibleSecondMenu'
     ]),
     ...mapState('user', [
-      'user',
+      'user'
+    ]),
+    ...mapGetters('user', [
       'roleList'
     ])
   },
-  watch: {
-    isShowChangeRoleModal (val) {
-      if (!val && !this.isChangeRoleSuccess) {
-        setTimeout(() => { this.nowRole = this.oldRole }, 1000)
-      }
-      this.isChangeRoleSuccess = false
-    },
-    'user': {
-      handler (val) {
-        this.nowRole = this.user.sysrole
-        // console.log(this.user)
-      },
-      deep: true
-    }
-  },
   methods: {
-    ...mapMutations('user', [
-      '_user' // 同步筛选列
-    ]),
     ...mapActions('menu', [
-      '_DelAllTag',
-      '_FirstMenuList',
-      '_SecondMenuList',
-      '_ThirdMenuList',
-      '_AddTag'
+      '_DelAllTag'
     ]),
     ...mapMutations('menu', [
-      '_isVisibleSecondMenu',
-      '_allOrderKeyword',
-      '_tag'
+      '_isVisibleSecondMenu'
     ]),
-    getRealRole () {
-      for (let val of this.roleList) {
-        if (val.type === this.user.sysrole) {
-          return val.roleName
-        }
-      }
-    },
     dropDownFunc (name) {
-      if (name === 'changeRole') {
-        // this.$http.get('/v2/sessionUser/info').then(res => {
-        //   this._user(res.data)
-        // })
-        this.isShowChangeRoleModal = !this.isShowChangeRoleModal
-      } else if (name === 'ceshi') {
-        for (let key in sessionStorage) {
-          if (key.indexOf('menu') !== -1) {
-            sessionStorage.removeItem(key)
-          }
+      const actions = {
+        changeRole: () => this.isShowChangeRoleModal = !this.isShowChangeRoleModal,
+        logout: () => {
+          Modal.warning({
+            title: '退出登录',
+            content: '确认退出登录吗？',
+            closable: true,
+            onOk: () => {
+              this.logoutFunc()
+            }
+          })
         }
-        // window.localStorage.clear()
-      } else if (name === 'logout') {
-        this.$Modal.warning({
-          title: '退出登录',
-          content: '确认退出登录吗？',
-          closable: true,
-          onOk: () => {
-            this.logoutFunc()
-          }
-        })
       }
+      actions[name].call(this) // 执行操作
     },
     // 退出登录
     logoutFunc () {
       this.$http.post('/logout').then(res => {
         if (res.success) {
           this.clearSessionFunc()
-          window.location.href = '/login'
+          this.$router.push({ name: 'login' })
         }
       })
     },
-    // 清楚缓存
+    // 清除缓存
     clearSessionFunc () {
       this._DelAllTag()
       for (let key in sessionStorage) {
@@ -261,106 +208,25 @@ export default {
         }
       }
     },
-    // 修改角色
-    selectRoleFunc () {
-      // if (this.nowRole === this.oldRole) {
-      //   this.$Message.warning('请切换角色后再试')
-      //   return false
-      // }
-      // let url = '/user/changeRole'
-      // let data = {
-      //   role: this.nowRole
-      // }
-      // this.modalLoading = true
-      // this.$http.post(url, data, { headers: this.$header }).then(res => {
-      //   setTimeout(() => { this.modalLoading = false }, 500)
-      //   if (res.success) {
-      //     this.$Spin.show()
-      //     this.oldRole = this.nowRole
-      //     this.isChangeRoleSuccess = true
-      //     this.isShowChangeRoleModal = false
-      //     // this.getNewMenuList()
-      //   } else {
-      //     this.$Message.error(res.message)
-      //   }
-      // })
-    },
-    // 获取菜单
-    // getNewMenuList () {
-    //   // this.$http.get('/index?userid=52&epid=6').then(res => {
-    //   // console.log(res)
-    //   this.$http.get('/v2/sessionUser/info').then(res => {
-    //     this._user(res.data)
-    //     this.clearSessionFunc()
-    //     this.$http.get('/v2/menu//list').then(res => {
-    //       if (res.success) {
-    //         let menuList = res.data
-    //         // window.localStorage.clear()
-    //         this._FirstMenuList(menuList)
-    //         // this._SecondMenuList(menuList.secondList)
-    //         // this._ThirdMenuList(menuList.thirdList)
-    //         this.$Spin.hide()
-    //         this.$Message.success('切换角色成功')
-    //         this.$getAllBadgeCount('all')
-    //         this.$router.push({ name: 'Enter' })
-    //       }
-    //     })
-    //   })
-    //   // })
-    // },
-    // 搜索进入全部工单
-    // searchAllOrder () {
-    //   for (let obj in this.thirdMenuList) {
-    //     this.thirdMenuList[obj].forEach(val => {
-    //       if (val.routerName === 'AllOrder') {
-    //         this._AddTag(val.parent_id + '-' + val.id)
-    //         this._allOrderKeyword(this.allOrderKeyword)
-    //         this.$router.push({ name: 'AllOrder', query: { keyword: this.allOrderKeyword } })
-    //       }
-    //     })
-    //   }
-    // },
     // 点击帮助下拉
     helpClick (name) {
-      if (name === 'helpCenter') {
-        this._AddTag('-2')
-      } else if (name === 'discover') {
-        this.$router.push({ name: 'GuideOne' })
+      const actions = {
+        other: () => {}
       }
+      actions[name].call(this) // 执行操作
     },
     // 在浏览器中打开
     openInWindow () {},
     // 修改人员状态
     changeStatus (tagId) {
-      if (this.user.isChargeUser === 1 || this.user.isChargeUser === 2) {
-        this.$http.put('/v2/epTag/updateUserStateTag', { tagId: tagId }).then(res => {
-          if (res.success) {
-            this.$Message.success('修改状态成功')
-            this.getRoleStatus()
-          } else {
-            this.$Message.success(res.message)
-          }
-        })
-      } else {
-        this.$Notice.warning({
-          title: '不支持设置人员状态操作',
-          duration: 0,
-          render: h => {
-            return h('span', {
-              style: {
-                lineHeight: '22px'
-              }
-            }, [
-              '免费版本不支持设置人员状态操作，建议升级为VIP版本，客服热线0592-3278627 ',
-              h('a', {
-                on: {
-                  click: () => this.$updateQrcodeModal.show()
-                }
-              }, '立即升级')
-            ])
-          }
-        })
-      }
+      this.$http.put('/v2/epTag/updateUserStateTag', { tagId: tagId }).then(res => {
+        if (res.success) {
+          this.$Message.success('修改状态成功')
+          this.getRoleStatus()
+        } else {
+          this.$Message.success(res.message)
+        }
+      })
     },
     // 获取当前人员状态
     getRoleStatus () {

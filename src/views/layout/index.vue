@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 import FirstMenu from './FirstMenu'
 import SecondMenu from './SecondMenu'
 import HeadNav from './HeadNav'
@@ -41,6 +42,14 @@ export default {
       const fromDepth = from.path.split('/').length
       this.transitionName = toDepth < fromDepth ? 'slider-right' : 'slider-left'
     }
+  },
+  methods: {
+    ...mapActions('user', [
+      '_getUserInfo'
+    ])
+  },
+  created () {
+    this._getUserInfo()
   }
 }
 </script>
