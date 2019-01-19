@@ -42,7 +42,7 @@
                 {{user.name}}
               </div>
               <div class="avatar-text-second">
-                {{getRealRole()}}
+                <!-- {{getRealRole()}} -->
               </div>
             </div>
             <Icon
@@ -52,12 +52,7 @@
           </a>
           <DropdownMenu slot="list">
             <DropdownItem name="changeRole">切换角色</DropdownItem>
-            <DropdownItem
-              name="logout"
-              v-if="openEnvironment.indexOf('DingTalk') === -1"
-            >退出登录</DropdownItem>
-            <!-- <DropdownItem disabled>禁止的菜单</DropdownItem> -->
-            <!-- <DropdownItem divided name="ceshi">带横线的菜单</DropdownItem> -->
+            <DropdownItem name="logout">退出登录</DropdownItem>
           </DropdownMenu>
         </Dropdown>
         <!-- 修改工作状态 -->
@@ -112,17 +107,6 @@
               <DropdownItem name="discover">探索单小二</DropdownItem>
             </DropdownMenu>
           </Dropdown>
-          <div
-            class="open-in-window nav-icon-hover"
-            v-if="openEnvironment.indexOf('DingTalk') !== -1"
-            @click="openInWindow"
-          >
-            <Icon
-              type="ios-globe-outline"
-              size="26"
-            ></Icon>
-            <font>网页版</font>
-          </div>
         <!-- </router-link> -->
         <!-- <Icon
           type="ios-notifications-outline"
@@ -134,43 +118,18 @@
           size="26"
           class="nav-icon"
         ></Icon> -->
-        <Input
+        <!-- <Input
           v-model="allOrderKeyword"
           placeholder="请输入工单号或标题进行搜索"
           icon="ios-search"
           class="nav-input nav-icon"
           @on-click="searchAllOrder"
           @on-enter="searchAllOrder"
-        />
+        /> -->
       </div>
     </Col>
-    <Modal
-      title="切换角色"
-      class="role-change-modal"
-      :width="700"
-      :loading="modalLoading"
-      v-model="isShowChangeRoleModal"
-      @on-ok="selectRoleFunc"
-    >
-      <div class="modal-box">
-        <ul>
-          <li
-            v-for="item in roleList"
-            :key="item.type"
-            :class="{active: nowRole === item.type}"
-            @click="nowRole = item.type"
-          >
-          <div class="role-icon" :style="`background-image: url(${item.icon})`"></div>
-            <p class="role-name">{{item.roleName}}</p>
-            <span class="role-label">{{item.label}}</span>
-          </li>
-        </ul>
-      </div>
-      <div slot="footer">
-        <Button type="text" @click="isShowChangeRoleModal =  false">取消</Button>
-        <Button type="primary" @click="selectRoleFunc" :loading="modalLoading">确认</Button>
-      </div>
-    </Modal>
+
+    <ChangeRole v-model="isShowChangeRoleModal"/>
   </div>
 </template>
 
@@ -181,38 +140,32 @@ import {
   Col,
   Breadcrumb,
   BreadcrumbItem,
-  Button,
   Icon,
-  Input,
-  Modal,
   Dropdown,
+  DropdownMenu,
   DropdownItem,
   Avatar
 } from 'iview'
+
+import ChangeRole from './ChangeRole'
 
 export default {
   components: {
     Col,
     Breadcrumb,
     BreadcrumbItem,
-    Button,
     Icon,
-    Input,
-    Modal,
     Dropdown,
+    DropdownMenu,
     DropdownItem,
-    Avatar
+    Avatar,
+    ChangeRole
   },
   data () {
     return {
       hasMounted: false,
       isShowChangeRoleModal: false,
-      modalLoading: false,
       isChangeRoleSuccess: false,
-      nowRole: 3,
-      oldRole: 3,
-      allOrderKeyword: '',
-      openEnvironment: '',
       tagList: [],
       nowStatus: {}
     }
@@ -268,9 +221,9 @@ export default {
     },
     dropDownFunc (name) {
       if (name === 'changeRole') {
-        this.$http.get('/v2/sessionUser/info').then(res => {
-          this._user(res.data)
-        })
+        // this.$http.get('/v2/sessionUser/info').then(res => {
+        //   this._user(res.data)
+        // })
         this.isShowChangeRoleModal = !this.isShowChangeRoleModal
       } else if (name === 'ceshi') {
         for (let key in sessionStorage) {
@@ -314,59 +267,59 @@ export default {
       //   this.$Message.warning('请切换角色后再试')
       //   return false
       // }
-      let url = '/user/changeRole'
-      let data = {
-        role: this.nowRole
-      }
-      this.modalLoading = true
-      this.$http.post(url, data, { headers: this.$header }).then(res => {
-        setTimeout(() => { this.modalLoading = false }, 500)
-        if (res.success) {
-          this.$Spin.show()
-          this.oldRole = this.nowRole
-          this.isChangeRoleSuccess = true
-          this.isShowChangeRoleModal = false
-          this.getNewMenuList()
-        } else {
-          this.$Message.error(res.message)
-        }
-      })
-    },
-    // 获取菜单
-    getNewMenuList () {
-      // this.$http.get('/index?userid=52&epid=6').then(res => {
-      // console.log(res)
-      this.$http.get('/v2/sessionUser/info').then(res => {
-        this._user(res.data)
-        this.clearSessionFunc()
-        this.$http.get('/v2/menu//list').then(res => {
-          if (res.success) {
-            let menuList = res.data
-            // window.localStorage.clear()
-            this._FirstMenuList(menuList)
-            // this._SecondMenuList(menuList.secondList)
-            // this._ThirdMenuList(menuList.thirdList)
-            this.$Spin.hide()
-            this.$Message.success('切换角色成功')
-            this.$getAllBadgeCount('all')
-            this.$router.push({ name: 'Enter' })
-          }
-        })
-      })
+      // let url = '/user/changeRole'
+      // let data = {
+      //   role: this.nowRole
+      // }
+      // this.modalLoading = true
+      // this.$http.post(url, data, { headers: this.$header }).then(res => {
+      //   setTimeout(() => { this.modalLoading = false }, 500)
+      //   if (res.success) {
+      //     this.$Spin.show()
+      //     this.oldRole = this.nowRole
+      //     this.isChangeRoleSuccess = true
+      //     this.isShowChangeRoleModal = false
+      //     // this.getNewMenuList()
+      //   } else {
+      //     this.$Message.error(res.message)
+      //   }
       // })
     },
+    // 获取菜单
+    // getNewMenuList () {
+    //   // this.$http.get('/index?userid=52&epid=6').then(res => {
+    //   // console.log(res)
+    //   this.$http.get('/v2/sessionUser/info').then(res => {
+    //     this._user(res.data)
+    //     this.clearSessionFunc()
+    //     this.$http.get('/v2/menu//list').then(res => {
+    //       if (res.success) {
+    //         let menuList = res.data
+    //         // window.localStorage.clear()
+    //         this._FirstMenuList(menuList)
+    //         // this._SecondMenuList(menuList.secondList)
+    //         // this._ThirdMenuList(menuList.thirdList)
+    //         this.$Spin.hide()
+    //         this.$Message.success('切换角色成功')
+    //         this.$getAllBadgeCount('all')
+    //         this.$router.push({ name: 'Enter' })
+    //       }
+    //     })
+    //   })
+    //   // })
+    // },
     // 搜索进入全部工单
-    searchAllOrder () {
-      for (let obj in this.thirdMenuList) {
-        this.thirdMenuList[obj].forEach(val => {
-          if (val.routerName === 'AllOrder') {
-            this._AddTag(val.parent_id + '-' + val.id)
-            this._allOrderKeyword(this.allOrderKeyword)
-            this.$router.push({ name: 'AllOrder', query: { keyword: this.allOrderKeyword } })
-          }
-        })
-      }
-    },
+    // searchAllOrder () {
+    //   for (let obj in this.thirdMenuList) {
+    //     this.thirdMenuList[obj].forEach(val => {
+    //       if (val.routerName === 'AllOrder') {
+    //         this._AddTag(val.parent_id + '-' + val.id)
+    //         this._allOrderKeyword(this.allOrderKeyword)
+    //         this.$router.push({ name: 'AllOrder', query: { keyword: this.allOrderKeyword } })
+    //       }
+    //     })
+    //   }
+    // },
     // 点击帮助下拉
     helpClick (name) {
       if (name === 'helpCenter') {
@@ -416,23 +369,10 @@ export default {
           this.nowStatus = res.data
         }
       })
-    },
-    // 获取人员状态列表
-    getTagList () {
-      let url = '/v2/epTag/list'
-      this.$http.get(url, { params: {
-        code: 1
-      } }).then(res => {
-        if (res.success) {
-          this.tagList = res.data
-        }
-      })
     }
   },
   created () {
-    this.getRoleStatus()
-    this.getTagList()
-    this.openEnvironment = navigator.userAgent
+    // this.getRoleStatus()
   },
   mounted () {
     setTimeout(() => {
@@ -545,73 +485,4 @@ export default {
   }
 }
 
-.role-change-modal {
-  z-index: 10001;
-
-  .modal-box {
-    ul {
-      display: flex;
-      flex-wrap: wrap;
-
-      li {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 159px;
-        height: 160px;
-        margin-right: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        box-shadow: 0px 0px 8px rgba(204, 204, 204, 0.35);
-        cursor: pointer;
-
-        .role-icon {
-          width: 51px;
-          height: 80px;
-          background-position: center;
-          background-repeat: no-repeat;
-          background-size: cover;
-        }
-
-        .role-name {
-          height: 30px;
-          min-width: 1px;
-          margin-top: 5px;
-          font-size: 14px;
-          color: #405060;
-          text-align: center;
-          line-height: 30px;
-        }
-
-        .role-label {
-          height: 18px;
-          min-width: 1px;
-          font-size: 12px;
-          color: #80848F;
-          text-align: center;
-        }
-      }
-
-      li:nth-child(4n) {
-        margin-right: 0;
-      }
-
-      .active {
-        background: -webkit-linear-gradient(left, @primary-color , @process-color); /* Safari 5.1 - 6.0 */
-        background: -o-linear-gradient(right, @primary-color, @process-color); /* Opera 11.1 - 12.0 */
-        background: -moz-linear-gradient(right, @primary-color, @process-color); /* Firefox 3.6 - 15 */
-        background: linear-gradient(to right, @primary-color , @process-color); /* 标准的语法 */
-
-        .role-name {
-          color: #fff;
-        }
-
-        .role-label {
-          color: #fff;
-        }
-      }
-    }
-  }
-}
 </style>

@@ -6,7 +6,7 @@
       <SecondMenu/>
     </div>
     <div class="smy__right">
-      <!-- <HeadNav/> -->
+      <HeadNav/>
       <HeadTags/>
       <div class="smy__content">
         <transition :name="transitionName">
@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex'
 import FirstMenu from './FirstMenu'
 import SecondMenu from './SecondMenu'
 import HeadNav from './HeadNav'
@@ -33,82 +32,16 @@ export default {
   },
   data () {
     return {
-      transitionName: '',
-      // 更新说明
-      updateInfo: {},
-      updateEditModal: false,
-      showInitDeploy: false
+      transitionName: ''
     }
-  },
-  computed: {
-    ...mapState('menu', [
-      'tag',
-      'thirdMenuList',
-      'allOrderKeyword'
-    ])
   },
   watch: {
     '$route' (to, from) {
       const toDepth = to.path.split('/').length
       const fromDepth = from.path.split('/').length
       this.transitionName = toDepth < fromDepth ? 'slider-right' : 'slider-left'
-    },
-    // 监听选中的标签，进行页面跳转
-    tag (val) {
-      if (val === '-1') {
-        this.$router.push({ name: 'Enter' })
-      } else if (val === '-2' || val === -2) {
-        this.$router.push({ name: 'Help' })
-      } else {
-        this.$router.push({ name: val })
-        // let tagName = val.split('-')
-        // this.thirdMenuList[tagName[0]].forEach(val => {
-        //   if (val.id === Number(tagName[1])) {
-        //     if (val.routerName === 'AllOrder') {
-        //       if (this.allOrderKeyword) {
-        //         this.$router.push({ name: 'AllOrder', query: { keyword: this.allOrderKeyword } })
-        //         this._allOrderKeyword('')
-        //       } else {
-        //         let name = val.routerName[0].toLowerCase() + val.routerName.substring(1)
-        //         if (window.location.href.indexOf(name) === -1) {
-        //           this.$router.push({name: val.routerName})
-        //         }
-        //       }
-        //     } else {
-        //       let name = val.routerName[0].toLowerCase() + val.routerName.substring(1)
-        //       if (window.location.href.indexOf(name) === -1) {
-        //         this.$router.push({name: val.routerName})
-        //       }
-        //     }
-        //   }
-        // })
-      }
     }
-  },
-  methods: {
-    ...mapMutations('menu', [
-      '_orderMenuList',
-      '_allOrderKeyword'
-    ]),
-    ...mapActions('menu', [
-      '_FirstMenuList',
-      '_SecondMenuList',
-      '_ThirdMenuList'
-    ])
-  },
-  created () {}
-  // beforeRouteEnter (to, from, next) {
-  //   axios.get('/v2/menu/list').then(res => {
-  //     if (res.success) {
-  //       let menuList = res.data
-  //       next(vm => {
-  //         vm._FirstMenuList(menuList)
-  //         // vm._SecondMenuList(menuList.secondList)
-  //         // vm._ThirdMenuList(menuList.thirdList)
-  //       })
-  //     }
-  //   })
-  // }
+  }
 }
 </script>
 

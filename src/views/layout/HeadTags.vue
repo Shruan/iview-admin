@@ -20,7 +20,7 @@
           :name="item.name"
           :color="item.name == tag ? 'green' : 'default'"
           :closable="item.name != homePage"
-          @on-close="closeTag"
+          @on-close="_DelTag(item.name)"
         >
           <span
             @click.stop="_tag(item.name)"
@@ -57,6 +57,7 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
+import { getTagInFirst } from '@/libs/util'
 
 import {
   Tag,
@@ -88,20 +89,29 @@ export default {
       'thirdMenuList',
       'tagList',
       'tag',
-      'homePage'
+      'homePage',
+      'routes'
     ])
   },
   watch: {
     tag (val) {
-      setTimeout(() => {
-        this.refsTag.forEach((item, index) => {
-          if (val === item.name) {
-            let tag = this.refsTag[index].$el
-            this.moveToView(tag)
-          }
-        })
-      }, 50) // 这里不设定时器就会有偏移bug
-      // this.tagsCount = this.tagsList.length
+      if (val) {
+        setTimeout(() => {
+          this.refsTag.forEach((item, index) => {
+            if (val === item.name) {
+              let tag = this.refsTag[index].$el
+              this.moveToView(tag)
+            }
+          })
+        }, 50) // 这里不设定时器就会有偏移bug
+        this.$router.push({ name: val })
+        if (val != this.homePage) {
+          // tag不为首页时，检索 该tag 所在的一级菜单
+          const firstMenu = getTagInFirst(val, this.routes)
+          if (firstMenu) this._firstMenu(firstMenu)
+        }
+        // this.tagsCount = this.tagsList.length
+      }
     }
   },
   methods: {
@@ -111,6 +121,7 @@ export default {
     // console.log(document.getElementsByClassName('tagList')[0].style)
     // },
     ...mapMutations('menu', [
+      '_firstMenu',
       '_tag'
     ]),
     ...mapActions('menu', [
@@ -146,9 +157,6 @@ export default {
           }
         })
       }, 100)
-    },
-    closeTag (event, name) {
-      this._DelTag(name)
     },
     // 鼠标滚轮滚动
     handlescroll (e) {

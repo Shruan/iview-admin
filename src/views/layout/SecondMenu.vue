@@ -115,9 +115,6 @@ export default {
     ...mapState('menu', [
       'isVisibleSecondMenu',
       'firstMenu',
-      'firstMenuList',
-      'secondMenuList',
-      'thirdMenuList',
       'tag',
       'allBadgeCount'
     ]),
