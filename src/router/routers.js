@@ -85,6 +85,14 @@ export default [
             meta: {
               title: '新建客户'
             }
+          },
+          {
+            path: 'homePage2',
+            name: 'HomePage2',
+            component: Home,
+            meta: {
+              hideInMenu: true
+            }
           }
         ]
       }
