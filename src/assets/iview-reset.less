@@ -1,0 +1,130 @@
+// tooltip气泡背景色
+.ivu-tooltip{
+  .ivu-tooltip-popper[x-placement^=bottom]{
+    .ivu-tooltip-inner{
+      background-color: @tips-color;
+    }
+    .ivu-tooltip-arrow{
+      border-bottom-color: @tips-color
+    }
+  }
+}
+// poptip气泡阴影
+.ivu-poptip-popper{
+  .ivu-poptip-inner{
+    box-shadow:0 2px 10px rgba(153, 153, 153, 0.9)
+  }
+}
+// 还原poptip气泡confirm阴影
+.ivu-poptip-confirm{
+  .ivu-poptip-inner{
+    box-shadow:0 1px 6px rgba(0, 0, 0, 0.2)
+  }
+}
+// 气泡“我知道了” 放右边
+.iKnowBtn{
+  text-align: right;
+}
+
+.ivu-page .ivu-page-item a {
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\5FAE\8F6F\96C5\9ED1", Arial, sans-serif;
+}
+
+.ivu-modal-wrap .ivu-modal {
+  max-width: 100%;
+  margin-bottom: 200px;
+  top: 50px;
+}
+.visit-modal .ivu-modal-content .ivu-modal-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+// 多选select选择器样式修复
+.ivu-select-multiple .ivu-select-selection {
+  white-space: nowrap;
+  overflow-y: auto;
+}
+// ghost按钮中文字颜色
+.ivu-btn-ghost,.ivu-btn-default {
+  color: #80848F;
+}
+
+// ghost按钮中文字hover颜色
+.ivu-btn-ghost:hover,.ivu-btn-default:hover {
+  color: @primary-color;
+}
+
+// 工单视图poptip 去除内边距
+.template-view .ivu-poptip-inner .ivu-poptip-body {
+  padding: 0 0;
+}
+
+.smy__box {
+  //-------------组件样式重写-------------
+  // 标签页的hover颜色
+  .ivu-tabs-tab:hover {
+    color: @primary-color;
+  }
+
+  // 莫名一条线
+  .ivu-menu-vertical.ivu-menu-light:after {
+    width: 0px;
+  }
+  // 修改tag圆点颜色
+  .ivu-tag-green,
+  .ivu-tag-green.ivu-tag-dot .ivu-tag-dot-inner{
+    background-color: #3ccba6;
+    line-height: 32px;
+  }
+
+  .ivu-tag-green .ivu-tag-text {
+    color: inherit !important;
+  }
+
+  // 修改二级菜单的hover颜色
+  .ivu-menu-submenu-title:hover,.ivu-menu-item:hover {
+    background: #F5F7F9;
+  }
+
+  // 修改二级菜单的上箭头边距
+  .ivu-menu-submenu-title span i:last-child {
+    margin-right: 0;
+  }
+
+
+
+  // 版本用量页面进度条色值修改
+  .version-dosage {
+    .ivu-progress-success {
+      .ivu-progress-outer {
+        .ivu-progress-inner {
+          .ivu-progress-bg {
+            background-color: #3ccba6
+          }
+        }
+      }
+    }
+  }
+
+  // error按钮中文字颜色
+  .ivu-btn-error {
+    background: transparent;
+    color: #80848F;
+    border-color: #DDDEE1;
+  }
+
+  // error按钮中文字hover颜色
+  .ivu-btn-error:hover {
+    background: transparent;
+    color: #F2795B;
+    border-color: #F2795B;
+  }
+
+  .ivu-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  //-------------组件样式重写结束-------------
+}
