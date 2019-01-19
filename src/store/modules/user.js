@@ -1,9 +1,8 @@
-const state = {
-  user: {}
-}
+import config from '@/config'
 
-const getters = {
-  User: state => state.user
+const state = {
+  user: {},
+  roleList: config.roleList
 }
 
 const mutations = {
