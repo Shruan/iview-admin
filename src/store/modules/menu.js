@@ -2,43 +2,28 @@ import $$ from '@/store/plugins/storage'
 import { getMenuList } from '@/api'
 import routes from '@/router/routers'
 import config from '@/config'
+import { getRouterView } from '@/libs/util'
 import vue from 'vue'
 
 const namespace = 'menu'
 $$.setNamespace(namespace)
 
-const getPage = (data) => {
-  const pages = []
-  data.forEach(item => {
-    if (!item.children || item.children.length === 0) {
-      pages.push({
-        name: item.name,
-        meta: item.meta
-      })
-    } else {
-      pages.push(...getPage(item.children))
-    }
-  })
-  return pages
+const getHomeRouter = (homePage, pageList) => {
+  const Hometag = pageList.find(item => item.name === homePage)
+  Hometag.meta.title = '首页'
+  Hometag.isHomeTag = true
+  return Hometag
 }
 
-const pageList = getPage(routes)
-
-const Hometag = pageList.find(item => item.name === config.HomePage)
-console.log(Hometag)
-Hometag.meta.title = '首页'
-
 const state = {
-  pageList, // 所有的页面列表
+  routes,
+  pageList: getRouterView(routes), // 所有的页面列表
   homePage: config.HomePage, // 首页
   // 标签列表
-  tagList: $$.get('tagList') || [Hometag],
-  // 面包屑
-  breadcrumbList: $$.get('breadcrumbList') || [],
-  // 选中的一级菜单名称（即下标）
-  firstMenu: $$.get('firstMenu') || 'OrderManage',
-  // 选中的标签名称（形式为0-0-0）
-  tag: $$.get('tag') || '-1',
+  // tagList: $$.get('tagList') || [getHomeRouter(this)],
+  breadcrumbList: $$.get('breadcrumbList') || [], // 面包屑
+  firstMenu: $$.get('firstMenu') || 'OrderManage', // 选中的一级菜单名称（即下标）
+  tag: $$.get('tag') || config.HomePage, // 选中的标签名称
   // 显示隐藏 二级菜单
   isVisibleSecondMenu: $$.get('isVisibleSecondMenu') !== ''
     ? $$.get('isVisibleSecondMenu') : true,
@@ -49,6 +34,9 @@ const state = {
   // 菜单徽标熟练
   allBadgeCount: {}
 }
+
+// 标签列表
+state.tagList = $$.get('tagList') || [getHomeRouter(state.homePage, state.pageList)]
 
 const getters = {
   // 获取一级菜单
@@ -82,6 +70,9 @@ const getters = {
 }
 
 const mutations = {
+  _setHomePage (state, value) {
+    state.homePage = value
+  },
   _allBadgeCount (state, value) {
     for (let key in value) {
       vue.set(state.allBadgeCount, key, value[key])
@@ -107,18 +98,29 @@ const mutations = {
   },
   _isVisibleSecondMenu (state, value) {
     state.isVisibleSecondMenu = !state.isVisibleSecondMenu
-  },
-  _orderMenuList (state, value) {
-    value.forEach((item) => {
-      let menu = {}
-      menu.name = item.name
-      menu.routerName = 'AllOrder'
-      state.secondMenuList[0][2].list.push(menu)
-    })
   }
 }
 
 const actions = {
+  _changeHomePage ({ commit, state, dispatch }, data) {
+    let value
+    let init = false
+    if (typeof data === 'object') {
+      value = data.value
+      init = data.init
+    } else {
+      value = data
+    }
+    if (state.homePage !== value) {
+      state.tagList.forEach(item => {
+        if (item.isHomeTag) item.name = value
+      })
+      commit('_setHomePage', value)
+    }
+    if (init) {
+      dispatch('_DelAllTag')
+    }
+  },
   _GetMenuList () {
     getMenuList().then(res => {
       console.log(res)
@@ -139,24 +141,24 @@ const actions = {
     let tagList = state.tagList
     let index // 当前选中的tag下标
     for (let i = 0; i < tagList.length; i++) {
-      if (state.tag === tagList[i]) {
+      if (state.tag === tagList[i].name) {
         index = i
       }
     }
     // 查询标签是否已存在
     for (let i = 0; i < tagList.length; i++) {
-      if (value === tagList[i]) {
+      if (value === tagList[i].name) {
         tagList.splice(i, 1)
         commit('_tagList', tagList)
         // 若删除在选中的左侧 则选择 已选中的前一个
         if (i < index) {
-          commit('_tag', tagList[index - 1])
+          commit('_tag', tagList[index - 1].name)
         } else if (i === index) {
           // 若删除的即是选中的
           if (index === tagList.length) {
-            commit('_tag', tagList[index - 1])
+            commit('_tag', tagList[index - 1].name)
           } else {
-            commit('_tag', tagList[index])
+            commit('_tag', tagList[index].name)
           }
         }
       }
@@ -164,47 +166,41 @@ const actions = {
   },
   // 关闭所有标签
   _DelAllTag ({ commit, state }, value) {
-    let tagList = state.tagList.filter((val) => {
-      return val === '-1'
-    })
+    let tagList = state.tagList.filter(item => item.name === state.homePage)
     commit('_tagList', tagList)
-    commit('_tag', tagList[0])
-  },
-  // 关闭左侧标签
-  _DelLeftTag ({ commit, state }, value) {
-    let tag = state.tag
-    let tagList = state.tagList
-    let tagIndex = 0
-    tagList.forEach((val, index, arr) => {
-      if (tag === val) {
-        tagIndex = index
-      }
-    })
-    tagList.splice(1, tagIndex - 1)
-    commit('_tagList', tagList)
-  },
-  // 关闭右侧标签
-  _DelRightTag ({ commit, state }, value) {
-    let tag = state.tag
-    let tagList = state.tagList
-    let tagIndex = 0
-    let len = tagList.length
-    tagList.forEach((val, index, arr) => {
-      if (tag === val) {
-        tagIndex = index
-      }
-    })
-    tagList.splice(tagIndex + 1, len - tagIndex)
-    commit('_tagList', tagList)
+    commit('_tag', tagList[0].name)
   },
   // 关闭其他标签
   _DelOhterTag ({ commit, state }, value) {
-    let tag = state.tag
-    let tagList = state.tagList.filter((val) => {
-      return val === '-1' || val === tag
-    })
-    commit('_tagList', tagList)
+    commit('_tagList', state.tagList.filter(item => item.name === state.homePage || item.name === state.tag))
   }
+  // // 关闭左侧标签
+  // _DelLeftTag ({ commit, state }, value) {
+  //   let tag = state.tag
+  //   let tagList = state.tagList
+  //   let tagIndex = 0
+  //   tagList.forEach((val, index, arr) => {
+  //     if (tag === val) {
+  //       tagIndex = index
+  //     }
+  //   })
+  //   tagList.splice(1, tagIndex - 1)
+  //   commit('_tagList', tagList)
+  // },
+  // // 关闭右侧标签
+  // _DelRightTag ({ commit, state }, value) {
+  //   let tag = state.tag
+  //   let tagList = state.tagList
+  //   let tagIndex = 0
+  //   let len = tagList.length
+  //   tagList.forEach((val, index, arr) => {
+  //     if (tag === val) {
+  //       tagIndex = index
+  //     }
+  //   })
+  //   tagList.splice(tagIndex + 1, len - tagIndex)
+  //   commit('_tagList', tagList)
+  // },
 }
 
 export default { namespaced: true, state, getters, mutations, actions }
