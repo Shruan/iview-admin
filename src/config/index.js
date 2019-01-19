@@ -1,3 +1,5 @@
+import roles from './roles'
+
 export default {
   HomePage: 'HomePage',
   // 使用环境 dev、pro
@@ -6,5 +8,6 @@ export default {
   baseURL: {
     dev: 'https://www.easy-mock.com/mock/5c2e68211707a03bccd1f12f/iview-admin',
     pro: 'https://production.com'
-  }
+  },
+  roleList: roles
 }
